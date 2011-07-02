@@ -105,7 +105,12 @@ class Issue < ActiveRecord::Base
 
   # Returns true if usr or current user is allowed to view the issue
   def visible?(usr=nil)
-    (usr || User.current).allowed_to?(:view_issues, self.project) do |role, user|
+    usr ||= User.current
+
+    # issue is always visible to it's author
+    return true if self.author == usr
+
+    usr.allowed_to?(:view_issues, self.project) do |role, user|
       if user.logged?
         case role.issues_visibility
         when 'all'
@@ -115,10 +120,8 @@ class Issue < ActiveRecord::Base
         when 'own'
           self.author == user || user.is_or_belongs_to?(assigned_to)
         else
-          false
+          !self.is_private?
         end
-      else
-        !self.is_private?
       end
     end
   end
