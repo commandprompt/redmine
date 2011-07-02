@@ -107,12 +107,12 @@ module Redmine
           RDMPdfEncoding::rdm_pdf_iconv(@ic, txt)
         end
 
-        def RDMCell(w,h=0,txt='',border=0,ln=0,align='',fill=0,link='')
-          Cell(w,h,fix_text_encoding(txt),border,ln,align,fill,link)
+        def RDMCell(w ,h=0, txt='', border=0, ln=0, align='', fill=0, link='')
+          Cell(w, h, fix_text_encoding(txt), border, ln, align, fill, link)
         end
 
-        def RDMMultiCell(w,h=0,txt='',border=0,align='',fill=0)
-          MultiCell(w,h,fix_text_encoding(txt),border,align,fill)
+        def RDMMultiCell(w, h=0, txt='', border=0, align='', fill=0, ln=1)
+          MultiCell(w, h, fix_text_encoding(txt), border, align, fill, ln)
         end
 
         def Footer
@@ -282,8 +282,6 @@ module Redmine
              "#{issue.project} - #{issue.tracker} # #{issue.id}: #{issue.subject}")
         pdf.Ln
 
-        y0 = pdf.GetY
-
         pdf.SetFontStyle('B',9)
         pdf.RDMCell(35,5, l(:field_status) + ":","LT")
         pdf.SetFontStyle('',9)
@@ -331,18 +329,18 @@ module Redmine
           pdf.RDMMultiCell(155,5, (show_value custom_value),"R")
         end
 
+        y0 = pdf.GetY
+
         pdf.SetFontStyle('B',9)
         pdf.RDMCell(35,5, l(:field_subject) + ":","LT")
         pdf.SetFontStyle('',9)
         pdf.RDMMultiCell(155,5, issue.subject,"RT")
+        pdf.Line(pdf.GetX, y0, pdf.GetX, pdf.GetY)
 
         pdf.SetFontStyle('B',9)
-        pdf.RDMCell(35,5, l(:field_description) + ":","LT")
+        pdf.RDMCell(35+155, 5, l(:field_description), "LRT", 1)
         pdf.SetFontStyle('',9)
-        pdf.RDMMultiCell(155,5, issue.description.to_s,"RT")
-
-        pdf.Line(pdf.GetX, y0, pdf.GetX, pdf.GetY)
-        pdf.Line(pdf.GetX, pdf.GetY, pdf.GetX + 190, pdf.GetY)
+        pdf.RDMMultiCell(35+155, 5, issue.description.to_s, "LRB")
         pdf.Ln
 
         if issue.changesets.any? &&
@@ -352,8 +350,9 @@ module Redmine
           pdf.Ln
           for changeset in issue.changesets
             pdf.SetFontStyle('B',8)
-            pdf.RDMCell(190,5,
-              format_time(changeset.committed_on) + " - " + changeset.author.to_s)
+            csstr  = "#{l(:label_revision)} #{changeset.format_identifier} - "
+            csstr += format_time(changeset.committed_on) + " - " + changeset.author.to_s
+            pdf.RDMCell(190, 5, csstr)
             pdf.Ln
             unless changeset.comments.blank?
               pdf.SetFontStyle('',8)

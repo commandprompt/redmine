@@ -267,6 +267,12 @@ class IssuesControllerTest < ActionController::TestCase
     assert_kind_of Hash, session[:query]
     assert_kind_of Array, session[:query][:column_names]
     assert_equal columns, session[:query][:column_names].map(&:to_s)
+
+    # ensure only these columns are kept in the selected columns list
+    assert_tag :tag => 'select', :attributes => { :id => 'selected_columns' },
+                                 :children => { :count => 3 }
+    assert_no_tag :tag => 'option', :attributes => { :value => 'project' },
+                                    :parent => { :tag => 'select', :attributes => { :id => "selected_columns" } }
   end
 
   def test_index_with_custom_field_column
@@ -605,6 +611,36 @@ class IssuesControllerTest < ActionController::TestCase
     issue = Issue.find_by_subject('This is a child issue')
     assert_not_nil issue
     assert_nil issue.parent
+  end
+  
+  def test_post_create_private
+    @request.session[:user_id] = 2
+
+    assert_difference 'Issue.count' do
+      post :create, :project_id => 1,
+                 :issue => {:tracker_id => 1,
+                            :subject => 'This is a private issue',
+                            :is_private => '1'}
+    end
+    issue = Issue.first(:order => 'id DESC')
+    assert issue.is_private?
+  end
+  
+  def test_post_create_private_with_set_own_issues_private_permission
+    role = Role.find(1)
+    role.remove_permission! :set_issues_private
+    role.add_permission! :set_own_issues_private
+    
+    @request.session[:user_id] = 2
+
+    assert_difference 'Issue.count' do
+      post :create, :project_id => 1,
+                 :issue => {:tracker_id => 1,
+                            :subject => 'This is a private issue',
+                            :is_private => '1'}
+    end
+    issue = Issue.first(:order => 'id DESC')
+    assert issue.is_private?
   end
 
   def test_post_create_should_send_a_notification
