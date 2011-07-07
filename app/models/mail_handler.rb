@@ -430,6 +430,7 @@ class MailHandler < ActionMailer::Base
     keyword = keyword.to_s.downcase
     assignable = issue.assignable_users
     assignee = nil
+    assignee ||= User.current if keyword.match(/^(<+\s*me\s*>+|\/me)$/i) && assignable.detect {|a| a.id == User.current.id}
     assignee ||= assignable.detect {|a|
                    a.mail.to_s.downcase == keyword ||
                      a.login.to_s.downcase == keyword
