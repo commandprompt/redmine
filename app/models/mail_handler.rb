@@ -356,6 +356,7 @@ class MailHandler < ActionMailer::Base
   end
 
   def find_user_from_keyword(keyword)
+    user = User.current if keyword.match(/^(<+\s*me\s*>+|\/me)$/i)
     user ||= User.find_by_mail(keyword)
     user ||= User.find_by_login(keyword)
     if user.nil? && keyword.match(/ /)
