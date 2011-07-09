@@ -227,7 +227,6 @@ class MailHandler < ActionMailer::Base
     else
       @keywords[attr] = begin
         if (options[:override] || @@handler_options[:allow_override].include?(attr.to_s)) && (v = extract_keyword!(plain_text_body, attr, options[:format]))
-          v = v.titleize unless options[:raw] || options[:format]
           v
         elsif !@@handler_options[:issue][attr].blank?
           @@handler_options[:issue][attr]
@@ -262,7 +261,7 @@ class MailHandler < ActionMailer::Base
 
   # Returns a Hash of issue attributes extracted from keywords in the email body
   def issue_attributes_from_keywords(issue)
-    assigned_to = (k = get_keyword(:assigned_to, :override => true, :raw => true)) && find_user_from_keyword(k)
+    assigned_to = (k = get_keyword(:assigned_to, :override => true)) && find_user_from_keyword(k)
     assigned_to = nil if assigned_to && !issue.assignable_users.include?(assigned_to)
 
     attrs = {
@@ -271,10 +270,10 @@ class MailHandler < ActionMailer::Base
       'priority_id' => (k = get_keyword(:priority)) && IssuePriority.find_by_name(k).try(:id),
       'category_id' => (k = get_keyword(:category)) && issue.project.issue_categories.find_by_name(k).try(:id),
       'assigned_to_id' => assigned_to.try(:id),
-      'fixed_version_id' => (k = get_keyword(:fixed_version, :override => true, :raw => true)) && issue.project.shared_versions.find_by_name(k).try(:id),
+      'fixed_version_id' => (k = get_keyword(:fixed_version, :override => true)) && issue.project.shared_versions.find_by_name(k).try(:id),
       'start_date' => get_keyword(:start_date, :override => true, :format => '\d{4}-\d{2}-\d{2}'),
       'due_date' => get_keyword(:due_date, :override => true, :format => '\d{4}-\d{2}-\d{2}'),
-      'estimated_hours' => get_keyword(:estimated_hours, :override => true, :raw => true),
+      'estimated_hours' => get_keyword(:estimated_hours, :override => true),
       'done_ratio' => get_keyword(:done_ratio, :override => true, :format => '(\d|10)?0')
     }.delete_if {|k, v| v.blank? }
 
