@@ -233,7 +233,11 @@ module IssuesHelper
           l(:text_journal_set_to, :label => label, :value => value)
         end
       when 'attachment'
-        l(:text_journal_added, :label => label, :value => value)
+        s = l(:text_journal_added, :label => label, :value => value)
+        if no_html && !value.blank? && a = Attachment.find_by_id(detail.prop_key)
+          s << ": " + url_for(route_to_attachment(a).merge(:only_path => false))
+        end
+        s
       end
     else
       l(:text_journal_deleted, :label => label, :old => old_value)

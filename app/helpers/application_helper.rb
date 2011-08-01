@@ -96,7 +96,11 @@ module ApplicationHelper
     text = options.delete(:text) || attachment.filename
     action = options.delete(:download) ? 'download' : 'show'
 
-    link_to(h(text), {:controller => 'attachments', :action => action, :id => attachment, :filename => attachment.filename }, options)
+    link_to(h(text), route_to_attachment(attachment, action), options)
+  end
+
+  def route_to_attachment(attachment, action = 'show')
+    { :controller => 'attachments', :action => action, :id => attachment, :filename => attachment.filename }
   end
 
   # Generates a link to a SCM revision
