@@ -145,10 +145,9 @@ class Attachment < ActiveRecord::Base
       attachments.each_value do |attachment|
         file = attachment['file']
         next unless file && file.size > 0
-        a = Attachment.create(:container => obj,
-                              :file => file,
-                              :description => attachment['description'].to_s.strip,
-                              :author => User.current)
+        a = obj.attachments.create(:file => file,
+                                   :description => attachment['description'].to_s.strip,
+                                   :author => User.current)
 
         if a.new_record?
           obj.unsaved_attachments ||= []
