@@ -100,10 +100,11 @@ module ApplicationHelper
     opt_only_path = {}
     opt_only_path[:only_path] = (options[:only_path] == false ? false : true)
     options.delete(:only_path)
-    link_to(h(text),
-           {:controller => 'attachments', :action => action,
-            :id => attachment, :filename => attachment.filename}.merge(opt_only_path),
-           options)
+    link_to(h(text), route_to_attachment(attachment, action).merge(opt_only_path), options)
+  end
+
+  def route_to_attachment(attachment, action = 'show')
+    { :controller => 'attachments', :action => action, :id => attachment, :filename => attachment.filename }
   end
 
   # Generates a link to a SCM revision
