@@ -138,7 +138,12 @@ class MailHandler < ActionMailer::Base
     # add To and Cc as watchers before saving so the watchers can reply to Redmine
     add_watchers(issue)
     issue.save!
-    add_attachments(issue)
+
+    if add_attachments(issue)
+      # Adding attachments to a new issue creates a journal.  We need
+      # to save the record to trigger an issue update mail.
+      issue.save!
+    end
     logger.info "MailHandler: issue ##{issue.id} created by #{user}" if logger && logger.info
     issue
   end
@@ -198,13 +203,16 @@ class MailHandler < ActionMailer::Base
   end
 
   def add_attachments(obj)
+    added = false
     if email.has_attachments? || email.multipart?
       email.attachments.each do |attachment|
         obj.attachments.create(:file => attachment,
                                :author => user,
                                :content_type => attachment.content_type)
+        added = true
       end
     end
+    added
   end
 
   # Adds To and Cc as watchers of the given object if the sender has the
