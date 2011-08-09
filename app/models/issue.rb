@@ -972,11 +972,13 @@ class Issue < ActiveRecord::Base
     end
   end
 
-  # Callback on attachment deletion
+  # Callback on attachment addition
   def attachment_added(obj)
-    if @current_journal && !obj.new_record?
-      @current_journal.details << JournalDetail.new(:property => 'attachment', :prop_key => obj.id, :value => obj.filename)
-    end
+    init_journal(User.current) unless @current_journal
+    @current_journal.details << JournalDetail.new(:property => 'attachment', :prop_key => obj.id, :value => obj.filename)
+    # Currently, this is only triggered from attachments#destroy, so
+    # there's no one else to save the issue's journal.
+    @current_journal.save
   end
 
   # Callback on attachment deletion

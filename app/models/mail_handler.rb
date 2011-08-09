@@ -166,7 +166,11 @@ class MailHandler < ActionMailer::Base
     add_watchers(issue)
     issue.save!
 
-    add_attachments(issue)
+    if add_attachments(issue)
+      # Adding attachments to a new issue creates a journal.  We need
+      # to save the record to trigger an issue update mail.
+      issue.save!
+    end
     logger.info "MailHandler: issue ##{issue.id} created by #{user}"
     issue
   end
