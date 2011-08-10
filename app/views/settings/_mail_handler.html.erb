@@ -18,6 +18,14 @@
 </p>
 </div>
 
+<div class="box tabular settings">
+<p><%= setting_check_box :mail_handler_reopen_on_reply,
+       :onclick => "if (this.checked) { Form.Element.enable('settings_mail_handler_reopen_status'); } else { Form.Element.disable('settings_mail_handler_reopen_status'); }" %></p>
+<p><%= setting_select :mail_handler_reopen_status,
+       IssueStatus.all.reject{|s| s.is_closed?}.collect{|s| [s.name, s.name]},
+       :disabled => !Setting.mail_handler_reopen_on_reply? %></p>
+</div>
+
 <%= submit_tag l(:button_save) %>
 
 <% end %>
