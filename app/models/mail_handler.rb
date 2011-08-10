@@ -167,7 +167,10 @@ class MailHandler < ActionMailer::Base
     add_attachments(issue)
 
     # Reopen issue on new mail reply
-    issue.status = IssueStatus.default if issue.closed?
+    if issue.closed? && Setting.mail_handler_reopen_on_reply?
+      issue.status = IssueStatus.named(Setting.mail_handler_reopen_status).first || IssueStatus.default
+    end
+
     issue.save!
     logger.info "MailHandler: issue ##{issue.id} updated by #{user}" if logger && logger.info
     journal

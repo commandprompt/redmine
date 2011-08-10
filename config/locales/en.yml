@@ -353,6 +353,8 @@ en:
   setting_mail_handler_body_delimiters: "Truncate emails after one of these lines"
   setting_mail_handler_api_enabled: Enable WS for incoming emails
   setting_mail_handler_api_key: API key
+  setting_mail_handler_reopen_on_reply: Reopen closed issues on email reply
+  setting_mail_handler_reopen_status: Reopen with this status
   setting_sequential_project_identifiers: Generate sequential project identifiers
   setting_gravatar_enabled: Use Gravatar user icons
   setting_gravatar_default: Default Gravatar image
