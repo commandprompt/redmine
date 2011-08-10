@@ -194,6 +194,9 @@ class MailHandler < ActionMailer::Base
     issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
     journal.notes = cleaned_up_text_body
     add_attachments(issue)
+
+    # Reopen issue on new mail reply
+    issue.status = IssueStatus.default if issue.closed?
     issue.save!
     if logger && logger.info
       logger.info "MailHandler: issue ##{issue.id} updated by #{user}"
