@@ -43,7 +43,7 @@ module SettingsHelper
     setting_values = [] unless setting_values.is_a?(Array)
 
     setting_label(setting, options) +
-      hidden_field_tag("settings[#{setting}][]", '') +
+      hidden_field_tag("settings[#{setting}][]", '', :id => nil) +
       choices.collect do |choice|
         text, value = (choice.is_a?(Array) ? choice : [choice, choice])
         content_tag(
@@ -70,7 +70,7 @@ module SettingsHelper
 
   def setting_check_box(setting, options={})
     setting_label(setting, options) +
-      hidden_field_tag("settings[#{setting}]", 0) +
+      hidden_field_tag("settings[#{setting}]", 0, :id => nil) +
         check_box_tag("settings[#{setting}]", 1, Setting.send("#{setting}?"), options)
   end
 
