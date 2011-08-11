@@ -21,7 +21,7 @@
 
   <%= submit_tag l(:button_edit), :name => nil %>
 
-  <%= hidden_field_tag 'used_statuses_only', '0' %>
+  <%= hidden_field_tag 'used_statuses_only', '0', :id => nil %>
   <label><%= check_box_tag 'used_statuses_only', '1', @used_statuses_only %> <%= l(:label_display_used_statuses_only) %></label>
 
 </p>
