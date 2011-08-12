@@ -161,16 +161,14 @@ class MailHandler < ActionMailer::Base
     @@handler_options[:issue].clear
 
     journal = issue.init_journal(user)
-    issue.safe_attributes = issue_attributes_from_keywords(issue)
-    issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
-    journal.notes = cleaned_up_text_body
-    add_attachments(issue)
-
     # Reopen issue on new mail reply
     if issue.closed? && Setting.mail_handler_reopen_on_reply?
       issue.status = IssueStatus.named(Setting.mail_handler_reopen_status).first || IssueStatus.default
     end
-
+    issue.safe_attributes = issue_attributes_from_keywords(issue)
+    issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
+    journal.notes = cleaned_up_text_body
+    add_attachments(issue)
     issue.save!
     logger.info "MailHandler: issue ##{issue.id} updated by #{user}" if logger && logger.info
     journal
