@@ -201,15 +201,15 @@ class MailHandler < ActionMailer::Base
       # If the received email was a reply to a private note, make the added note private
       issue.private_notes = true
     end
-    issue.safe_attributes = issue_attributes_from_keywords(issue)
-    issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
-    journal.notes = cleaned_up_text_body
-    add_attachments(issue)
 
     # Reopen issue on new mail reply
     if issue.closed? && Setting.mail_handler_reopen_on_reply?
       issue.status = IssueStatus.named(Setting.mail_handler_reopen_status).first || IssueStatus.default
     end
+    issue.safe_attributes = issue_attributes_from_keywords(issue)
+    issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
+    journal.notes = cleaned_up_text_body
+    add_attachments(issue)
 
     issue.save!
     if logger && logger.info
