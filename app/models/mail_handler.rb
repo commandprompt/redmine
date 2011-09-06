@@ -65,7 +65,7 @@ class MailHandler < ActionMailer::Base
       when 'accept'
         @user = User.anonymous
       when 'create'
-        @user = MailHandler.create_user_from_email(email)
+        @user = create_user_from_email(email)
         if @user
           logger.info "MailHandler: [#{@user.login}] account created"
           Mailer.deliver_account_information(@user, @user.password)
@@ -338,22 +338,45 @@ class MailHandler < ActionMailer::Base
     @full_sanitizer ||= HTML::FullSanitizer.new
   end
 
-  # Creates a user account for the +email+ sender
-  def self.create_user_from_email(email)
+  def self.limit_for(klass, attribute)
+    klass.columns_hash[attribute.to_s].limit
+  end
+
+  def self.chop_on_limit(str, klass, attribute)
+    str[0, limit_for(klass, attribute)]
+  end
+
+  def self.assign_attr_with_limit(model, attr, value)
+    model.send("#{attr}=".to_sym, chop_on_limit(value, model.class, attr))
+  end
+
+  def self.new_user_from_email(email)
     addr = email.from_addrs.to_a.first
     if addr && !addr.spec.blank?
       user = User.new
-      user.mail = addr.spec
+      assign_attr_with_limit(user, 'mail', addr.spec)
 
       names = addr.name.blank? ? addr.spec.gsub(/@.*$/, '').split('.') : addr.name.split
-      user.firstname = names.shift
-      user.lastname = names.join(' ')
+      assign_attr_with_limit(user, 'firstname', names.shift)
+      assign_attr_with_limit(user, 'lastname', names.join(' '))
       user.lastname = '-' if user.lastname.blank?
 
-      user.login = user.mail
+      assign_attr_with_limit(user, 'login', user.mail)
       user.password = ActiveSupport::SecureRandom.hex(5)
       user.language = Setting.default_language
-      user.save ? user : nil
+
+      user
+    end
+  end
+
+  # Creates a user account for the +email+ sender
+  def create_user_from_email(email)
+    user = MailHandler.new_user_from_email(email)
+    if user.save
+      user
+    else
+      logger.error "MailHandler: failed to create User: #{user.errors.full_messages}" if logger
+      nil
     end
   end
 
