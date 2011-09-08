@@ -27,6 +27,8 @@
 #                                  if you don't the key to appear in the
 #                                  command line)
 #       --no-check-certificate     do not check server certificate
+#       --no-account-notice        disable new account notification email
+#
 #   -h, --help                     show this help
 #   -v, --verbose                  show extra information
 #   -V, --version                  show version information and exit
@@ -80,7 +82,7 @@ end
 class RedmineMailHandler
   VERSION = '0.1'
   
-  attr_accessor :verbose, :issue_attributes, :allow_override, :unknown_user, :no_permission_check, :url, :key, :no_check_certificate
+  attr_accessor :verbose, :issue_attributes, :allow_override, :unknown_user, :no_permission_check, :url, :key, :no_check_certificate, :no_account_notice
 
   def initialize
     self.issue_attributes = {}
@@ -100,7 +102,8 @@ class RedmineMailHandler
       [ '--allow-override', '-o', GetoptLong::REQUIRED_ARGUMENT],
       [ '--unknown-user',         GetoptLong::REQUIRED_ARGUMENT],
       [ '--no-permission-check',  GetoptLong::NO_ARGUMENT],
-      [ '--no-check-certificate', GetoptLong::NO_ARGUMENT]
+      [ '--no-check-certificate', GetoptLong::NO_ARGUMENT],
+      [ '--no-account-notice',    GetoptLong::NO_ARGUMENT]
     )
 
     opts.each do |opt, arg|
@@ -132,6 +135,8 @@ class RedmineMailHandler
         self.no_permission_check = '1'
       when '--no-check-certificate'
         self.no_check_certificate = true
+      when '--no-account-notice'
+        self.no_account_notice = '1'
       end
     end
     
@@ -146,7 +151,8 @@ class RedmineMailHandler
     data = { 'key' => key, 'email' => email, 
                            'allow_override' => allow_override,
                            'unknown_user' => unknown_user,
-                           'no_permission_check' => no_permission_check}
+                           'no_permission_check' => no_permission_check,
+                           'no_account_notice' => no_account_notice }
     issue_attributes.each { |attr, value| data["issue[#{attr}]"] = value }
              
     debug "Posting to #{uri}..."
