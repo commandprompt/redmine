@@ -42,7 +42,9 @@ class MailHandler < ActionMailer::Base
     # Status overridable by default
     @@handler_options[:allow_override] << 'status' unless @@handler_options[:issue].has_key?(:status)
 
-    @@handler_options[:no_permission_check] = (@@handler_options[:no_permission_check].to_s == '1' ? true : false)
+    @@handler_options[:no_permission_check] = (@@handler_options[:no_permission_check].to_s == '1')
+    @@handler_options[:no_account_notice] = (@@handler_options[:no_account_notice].to_s == '1')
+
     super email
   end
 
@@ -87,7 +89,9 @@ class MailHandler < ActionMailer::Base
         @user = create_user_from_email
         if @user
           logger.info "MailHandler: [#{@user.login}] account created"
-          Mailer.deliver_account_information(@user, @user.password)
+          unless @@handler_options[:no_account_notice]
+            Mailer.deliver_account_information(@user, @user.password)
+          end
         else
           logger.error "MailHandler: could not create account for [#{sender_email}]"
           return false

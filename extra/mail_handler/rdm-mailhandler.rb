@@ -25,7 +25,7 @@ end
 class RedmineMailHandler
   VERSION = '0.2'
 
-  attr_accessor :verbose, :issue_attributes, :allow_override, :unknown_user, :no_permission_check, :url, :key, :no_check_certificate
+  attr_accessor :verbose, :issue_attributes, :allow_override, :unknown_user, :no_permission_check, :no_account_notice, :url, :key, :no_check_certificate
 
   def initialize
     self.issue_attributes = {}
@@ -47,6 +47,7 @@ class RedmineMailHandler
                                               "* create: create a user account") {|v| self.unknown_user = v}
       opts.on("--no-permission-check",        "disable permission checking when receiving",
                                               "the email") {self.no_permission_check = '1'}
+      opts.on("--no-account-notice",          "disable new user account notification") {self.no_account_notice = '1'}
       opts.on("--key-file FILE",              "path to a file that contains the Redmine",
                                               "API key (use this option instead of --key",
                                               "if you don't the key to appear in the",
@@ -95,7 +96,8 @@ class RedmineMailHandler
     data = { 'key' => key, 'email' => email,
                            'allow_override' => allow_override,
                            'unknown_user' => unknown_user,
-                           'no_permission_check' => no_permission_check}
+                           'no_permission_check' => no_permission_check,
+                           'no_account_notice' => no_account_notice }
     issue_attributes.each { |attr, value| data["issue[#{attr}]"] = value }
 
     debug "Posting to #{uri}..."
