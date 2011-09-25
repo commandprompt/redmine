@@ -432,7 +432,8 @@ class User < Principal
         (block_given? ? yield(role, self) : true)
       }
     else
-      false
+      # Admin users are always authorized when no context is given
+      return true if admin?
     end
   end
 
