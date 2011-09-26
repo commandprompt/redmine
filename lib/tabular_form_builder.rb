@@ -37,7 +37,8 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
   # Returns a label tag for the given field
   def label_for_field(field, options = {})
       return ''.html_safe if options.delete(:no_label)
-      text = options[:label].is_a?(Symbol) ? l(options[:label]) : options[:label]
+      text = options.delete(:label)
+      text = l(text) if text.is_a?(Symbol)
       text ||= l(("field_" + field.to_s.gsub(/\_id$/, "")).to_sym)
       text += @template.content_tag("span", " *", :class => "required") if options.delete(:required)
       @template.content_tag("label", text.html_safe,
