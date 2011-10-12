@@ -745,9 +745,11 @@ en:
   label_missing_feeds_access_key: Missing a RSS access key
   label_feeds_access_key_created_on: "RSS access key created %{value} ago"
   label_module_plural: Modules
-  label_added_time_by: "Added by %{author} %{age} ago"
-  label_updated_time_by: "Updated by %{author} %{age} ago"
-  label_updated_time: "Updated %{value} ago"
+  label_added_time_by: "Added by %{author}: %{date}"
+  label_updated_time_by: "Updated by %{author}: %{date}"
+  label_updated_time: "Updated %{value}"
+  label_on_date_and_ago: "on %{date} (%{age} ago)"
+  label_age_ago: "%{value} ago"
   label_jump_to_a_project: Jump to a project...
   label_file_plural: Files
   label_changeset_plural: Changesets

@@ -316,13 +316,21 @@ module ApplicationHelper
   end
 
   def authoring(created, author, options={})
-    l(options[:label] || :label_added_time_by, :author => link_to_user(author), :age => time_tag(created))
+    l(options[:label] || :label_added_time_by, :author => link_to_user(author), :date => time_tag(created, options[:time_tag_label]))
   end
 
-  def time_tag(time)
-    text = "#{format_date(time)} (#{distance_of_time_in_words(Time.now, time)})"
+  def time_tag(time, label = nil)
+    date = time.to_date
+    age = distance_of_time_in_words(Time.now, time)
+    text = if date == Date.today
+             l(:label_age_ago, age)
+           else
+             l(label || :label_on_date_and_ago,
+               :date => format_activity_day(date),
+               :age => age)
+           end
     if @project
-      link_to(text, {:controller => 'activities', :action => 'index', :id => @project, :from => time.to_date}, :title => format_time(time))
+      link_to(text, {:controller => 'activities', :action => 'index', :id => @project, :from => date}, :title => format_time(time))
     else
       content_tag('acronym', text, :title => format_time(time))
     end
