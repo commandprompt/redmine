@@ -320,7 +320,7 @@ module ApplicationHelper
   end
 
   def time_tag(time)
-    text = distance_of_time_in_words(Time.now, time)
+    text = "#{format_date(time)} (#{distance_of_time_in_words(Time.now, time)})"
     if @project
       link_to(text, {:controller => 'activities', :action => 'index', :id => @project, :from => time.to_date}, :title => format_time(time))
     else
