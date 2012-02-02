@@ -105,6 +105,11 @@ class Issue < ActiveRecord::Base
     end
   end
 
+  # Include issue subject in the URL parameter, id has to come first.
+  def to_param
+    "#{id} #{subject}".parameterize
+  end
+
   # Returns true if usr or current user is allowed to view the issue
   def visible?(usr=nil)
     usr ||= User.current

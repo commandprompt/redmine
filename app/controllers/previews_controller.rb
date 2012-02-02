@@ -19,7 +19,8 @@ class PreviewsController < ApplicationController
   before_filter :find_project
 
   def issue
-    @issue = @project.issues.find_by_id(params[:id]) unless params[:id].blank?
+    # Accomodate the "NNN-subject-line" id notation
+    @issue = @project.issues.find_by_id(params[:id].to_i) unless params[:id].blank?
     if @issue
       @attachements = @issue.attachments
       @description = params[:issue] && params[:issue][:description]
