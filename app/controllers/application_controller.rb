@@ -222,7 +222,8 @@ class ApplicationController < ActionController::Base
 
   # Filter for bulk issue operations
   def find_issues
-    @issues = Issue.find_all_by_id(params[:id] || params[:ids])
+    # Accomodate the "NNN-subject-line" id notation
+    @issues = Issue.find_all_by_id((params[:id] && params[:id].to_i) || params[:ids])
     raise ActiveRecord::RecordNotFound if @issues.empty?
     if @issues.detect {|issue| !issue.visible?}
       deny_access
