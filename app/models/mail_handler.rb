@@ -376,12 +376,14 @@ class MailHandler < ActionMailer::Base
   # Creates a user account for the +email+ sender
   def create_user_from_email(email)
     user = MailHandler.new_user_from_email(email)
-    if user.save
-      user
+    if user
+      if !user.save
+        logger.error "MailHandler: failed to create User: #{user.errors.full_messages}" if logger
+      end
     else
-      logger.error "MailHandler: failed to create User: #{user.errors.full_messages}" if logger
-      nil
+      logger.error "MailHandler: failed to identify email sender" if logger
     end
+    user
   end
 
   private
