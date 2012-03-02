@@ -406,6 +406,7 @@ class Mailer < ActionMailer::Base
       bcc(notified_users)
       recipients []
       cc []
+      redmine_headers 'Recipients' => notified_users
     end
     super
   end
