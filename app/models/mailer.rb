@@ -395,6 +395,7 @@ class Mailer < ActionMailer::Base
       headers[:bcc] = [headers[:to], headers[:cc]].flatten.uniq.reject(&:blank?)
       headers[:to] = nil
       headers[:cc] = nil
+      redmine_headers 'Recipients' => headers[:bcc].join(', ')
     end
 
     if @message_id_object
