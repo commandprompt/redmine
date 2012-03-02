@@ -389,13 +389,15 @@ class Mailer < ActionMailer::Base
 
     notified_users = [recipients, cc].flatten.compact.uniq
     # Rails would log recipients only, not cc and bcc
-    mylogger.info "Sending email notification to: #{notified_users.join(', ')}" if mylogger
+    notified_emails_line = notified_users.join(', ')
+    mylogger.info "Sending email notification to: #{notified_emails_line}" if mylogger
 
     # Blind carbon copy recipients
     if Setting.bcc_recipients?
       bcc(notified_users)
       recipients []
       cc []
+      redmine_headers 'Recipients' => notified_emails_line
     end
     super
   end
