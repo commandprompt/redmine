@@ -44,7 +44,8 @@ class RedmineMailHandler
                                               "ACTION can be one of the following values:",
                                               "* ignore: email is ignored (default)",
                                               "* accept: accept as anonymous user",
-                                              "* create: create a user account") {|v| self.unknown_user = v}
+                                              "* create: create a user account"
+                                              "* register: create an inactive user account") {|v| self.unknown_user = v}
       opts.on("--no-permission-check",        "disable permission checking when receiving",
                                               "the email") {self.no_permission_check = '1'}
       opts.on("--no-account-notice",          "disable new user account notification") {self.no_account_notice = '1'}
