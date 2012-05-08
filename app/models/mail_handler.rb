@@ -66,7 +66,7 @@ class MailHandler < ActionMailer::Base
       case @@handler_options[:unknown_user]
       when 'accept'
         @user = User.anonymous
-      when 'create'
+      when 'create', 'register'
         @user = create_user_from_email(email)
         if @user
           logger.info "MailHandler: [#{@user.login}] account created"
@@ -348,6 +348,7 @@ class MailHandler < ActionMailer::Base
   # Returns a User from an email address and a full name
   def self.new_user_from_attributes(email_address, fullname=nil)
     user = User.new
+    user.register if @@handler_options[:unknown_user] == 'register'
 
     # Truncating the email address would result in an invalid format
     user.mail = email_address
@@ -377,7 +378,7 @@ class MailHandler < ActionMailer::Base
     addr = email.from_addrs.to_a.first
     if addr && !addr.spec.blank?
       user = self.class.new_user_from_attributes(addr.spec, addr.name)
-      if user.save
+      if user.process_registration
         user
       else
         logger.error "MailHandler: failed to create User: #{user.errors.full_messages}" if logger

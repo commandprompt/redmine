@@ -20,6 +20,7 @@
 #                                  ignore: email is ignored (default)
 #                                  accept: accept as anonymous user
 #                                  create: create a user account
+#                                  register: create an (inactive) user account
 #       --no-permission-check      disable permission checking when receiving
 #                                  the email
 #       --key-file=PATH            path to a file that contains the Redmine
