@@ -128,12 +128,10 @@ class Issue < ActiveRecord::Base
         when 'default'
           !self.is_private? || (self.author == user || user.is_or_belongs_to?(assigned_to))
         when 'own'
-          self.author == user || user.is_or_belongs_to?(assigned_to)
+          self.author == user || user.is_or_belongs_to?(assigned_to) || self.watcher_users.exists?(user)
         else
-          false
+          !self.is_private?
         end
-      else
-        !self.is_private?
       end
     end
   end
