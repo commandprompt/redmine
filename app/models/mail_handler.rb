@@ -198,6 +198,7 @@ class MailHandler < ActionMailer::Base
     issue.safe_attributes = issue_attributes_from_keywords(issue)
     issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
     journal.notes = cleaned_up_text_body
+    add_watchers(issue)
     add_attachments(issue)
     issue.save!
     logger.info "MailHandler: issue ##{issue.id} updated by #{user}"
@@ -250,8 +251,10 @@ class MailHandler < ActionMailer::Base
   # Adds To and Cc as watchers of the given object if the sender has the
   # appropriate permission
   def add_watchers(obj)
-    if user.allowed_to?("add_#{obj.class.name.underscore}_watchers".to_sym, obj.project)
+    if @@handler_options[:no_permission_check] || user.allowed_to?("add_#{obj.class.name.underscore}_watchers".to_sym, obj.project)
       addresses = [email.to, email.cc].flatten.compact.uniq.collect {|a| a.strip.downcase}
+      # filter out any users already watching it
+      addresses -= obj.watcher_users.collect(&:mail)
       unless addresses.empty?
         watchers = User.active.find(:all, :conditions => ['LOWER(mail) IN (?)', addresses])
         watchers.each {|w| obj.add_watcher(w)}
