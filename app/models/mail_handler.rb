@@ -410,7 +410,9 @@ class MailHandler < ActionMailer::Base
     addr = email.from_addrs.to_a.first
     if addr && !addr.spec.blank?
       user = self.class.new_user_from_attributes(addr.spec, TMail::Unquoter.unquote_and_convert_to(addr.name, 'utf-8'))
-      if user.process_registration
+      # register or activate the user, but don't spam admins if
+      # --no-account-notice was given
+      if user.process_registration(!@@handler_options[:no_account_notice])
         user
       else
         logger.error "MailHandler: failed to create User: #{user.errors.full_messages}"
