@@ -37,9 +37,11 @@ class Watcher < ActiveRecord::Base
 
   protected
 
-  def validate
-    errors.add :user_id, :invalid unless user.nil? || user.active?
-  end
+  # Allow inactive watchers: this hurts no one.
+  #
+  # def validate
+  #   errors.add :user_id, :invalid unless user.nil? || user.active?
+  # end
 
   private
 
