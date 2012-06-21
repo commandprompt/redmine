@@ -256,7 +256,8 @@ class MailHandler < ActionMailer::Base
       # filter out any users already watching it
       addresses -= obj.watcher_users.collect(&:mail)
       unless addresses.empty?
-        watchers = User.active.find(:all, :conditions => ['LOWER(mail) IN (?)', addresses])
+        # allow inactive watchers, they can be activated later
+        watchers = User.find(:all, :conditions => ['LOWER(mail) IN (?)', addresses])
         watchers.each {|w| obj.add_watcher(w)}
       end
     end
