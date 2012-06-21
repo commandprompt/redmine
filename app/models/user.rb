@@ -390,14 +390,14 @@ class User < Principal
     !logged?
   end
 
-  def process_registration
+  def process_registration(notify=true)
     case Setting.self_registration
     when '1'
       register_by_email_activation
     when '3'
       register_automatically
     else
-      register_manually_by_administrator
+      register_manually_by_administrator(notify)
     end
   end
 
@@ -628,9 +628,13 @@ class User < Principal
     self.save
   end
 
-  def register_manually_by_administrator
+  def register_manually_by_administrator(notify=true)
     # Sends an email to the administrators
-    Mailer.account_activation_request(self).deliver if self.save
+    if self.save
+      Mailer.account_activation_request(self).deliver if notify
+      # report success regardless of the notification status
+      true
+    end
   end
 
   # Removes references that are not handled by associations
