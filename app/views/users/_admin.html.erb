@@ -1,0 +1,17 @@
+<% disabled = (@user == User.current) %>
+
+<% form_for(:user, :url => { :action => 'update' }, :html => {:method => :put}) do %>
+  <%= hidden_field_tag 'tab', 'admin', :id => nil %>
+  <div class="warning">
+    <%=l :text_administrator_flag_warning %>
+  </div>
+  <fieldset class="box tabular">
+    <legend><%=l(:label_administration)%></legend>
+    <p>
+      <%= hidden_field_tag 'user[admin]', '0', :id => nil %>
+      <%= label_tag 'user[admin]', l(:field_admin) %>
+      <%= check_box_tag 'user[admin]', '1', @user.admin?, :disabled => disabled %>
+    </p>
+  </fieldset>
+  <%= submit_tag(l(:button_save)) unless disabled %>
+<% end %>

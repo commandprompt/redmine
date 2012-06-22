@@ -164,7 +164,7 @@ class UsersController < ApplicationController
       respond_to do |format|
         format.html {
           flash[:notice] = l(:notice_successful_update)
-          redirect_to :back
+          redirect_to :controller => 'users', :action => 'edit', :tab => params[:tab]
         }
         format.api  { head :ok }
       end
