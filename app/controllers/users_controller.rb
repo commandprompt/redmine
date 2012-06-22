@@ -154,7 +154,7 @@ class UsersController < ApplicationController
       respond_to do |format|
         format.html {
           flash[:notice] = l(:notice_successful_update)
-          redirect_to_referer_or edit_user_path(@user)
+          redirect_to_referer_or edit_user_path(@user, :tab => params[:tab])
         }
         format.api  { render_api_ok }
       end
