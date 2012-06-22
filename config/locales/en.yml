@@ -992,6 +992,7 @@ en:
   text_issue_conflict_resolution_cancel: "Discard all my changes and redisplay %{link}"
   text_account_destroy_confirmation: "Are you sure you want to proceed?\nYour account will be permanently deleted, with no way to reactivate it."
   text_session_expiration_settings: "Warning: changing these settings may expire the current sessions including yours."
+  text_administrator_flag_warning: "Administrator flag grants a user permissions to access and change every aspect of your Redmine instance.  Please mean it when you change it.  As a precaution, you cannot revoke administrator flag from yourself."
 
   default_role_manager: Manager
   default_role_developer: Developer

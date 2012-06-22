@@ -18,7 +18,6 @@
     <p><%= custom_field_tag_with_label :user, value %></p>
   <% end %>
 
-  <p><%= f.check_box :admin, :disabled => (@user == User.current) %></p>
   <%= call_hook(:view_users_form, :user => @user, :form => f) %>
 </fieldset>
 
