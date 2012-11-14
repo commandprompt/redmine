@@ -10,4 +10,4 @@
 <% issue.custom_field_values.each do |c| %><%= c.custom_field.name %>: <%= show_value(c) %>
 <% end %>
 
-<%= issue.description %>
+<%= issue.description unless skip_body? %>
