@@ -147,6 +147,7 @@ class IssuesController < ApplicationController
     @issue.save_attachments(params[:attachments] || (params[:issue] && params[:issue][:uploads]))
     if @issue.save
       call_hook(:controller_issues_new_after_save, { :params => params, :issue => @issue})
+      @issue.deliver_create_notification
       respond_to do |format|
         format.html {
           render_attachment_warning_if_needed(@issue)
