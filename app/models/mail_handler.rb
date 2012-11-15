@@ -145,13 +145,11 @@ class MailHandler < ActionMailer::Base
 
     # add To and Cc as watchers before saving so the watchers can reply to Redmine
     add_watchers(issue)
-    issue.save!
 
-    if add_attachments(issue)
-      # Adding attachments to a new issue creates a journal.  We need
-      # to save the record to trigger an issue update mail.
-      issue.save!
-    end
+    add_attachments(issue)
+    issue.save!
+    issue.deliver_create_notification
+
     logger.info "MailHandler: issue ##{issue.id} created by #{user}"
     issue
   end

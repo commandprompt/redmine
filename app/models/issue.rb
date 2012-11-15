@@ -509,6 +509,10 @@ class Issue < ActiveRecord::Base
     notified.collect(&:mail)
   end
 
+  def deliver_create_notification
+    Mailer.deliver_issue_add(self) if Setting.notified_events.include?('issue_added')
+  end
+
   # Returns the total number of hours spent on this issue and its descendants
   #
   # Example:
@@ -864,8 +868,9 @@ class Issue < ActiveRecord::Base
 
   # Callback on attachment deletion
   def attachment_added(obj)
-    init_journal(User.current) unless @current_journal
-    @current_journal.details << JournalDetail.new(:property => 'attachment', :prop_key => obj.id, :value => obj.filename)
+    if @current_journal && !obj.new_record?
+      @current_journal.details << JournalDetail.new(:property => 'attachment', :prop_key => obj.id, :value => obj.filename)
+    end
   end
 
   # Callback on attachment deletion
