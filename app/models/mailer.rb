@@ -43,6 +43,7 @@ class Mailer < ActionMailer::Base
     @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue)
     recipients = issue.recipients
     cc = issue.watcher_recipients - recipients
+    include_attachments(issue.attachments)
     mail :to => recipients,
       :cc => cc,
       :subject => "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
@@ -71,9 +72,19 @@ class Mailer < ActionMailer::Base
     @issue = issue
     @journal = journal
     @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue, :anchor => "change-#{journal.id}")
+    include_attachments(journal.details.map{ |d| d.property == 'attachment' && d.value.present? && Attachment.find_by_id(d.prop_key) }.reject{ |x| !x })
     mail :to => recipients,
       :cc => cc,
       :subject => s
+  end
+
+  def include_attachments(atts)
+    atts.each do |att|
+      attachments[att.filename] = {
+        :mime_type => att.content_type,
+        :content => File.read(att.diskfile)
+      }
+    end
   end
 
   def reminder(user, issues, days)
