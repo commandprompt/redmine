@@ -181,7 +181,11 @@ class MailHandler < ActionMailer::Base
   # Adds a note to an existing issue
   def receive_issue_reply(issue_id)
     issue = Issue.find_by_id(issue_id)
-    return unless issue
+    unless issue
+      logger.info "MailHandler: ignoring reply to non-existent issue ##{issue_id}"
+      return
+    end
+
     # check permission
     unless @@handler_options[:no_permission_check]
       unless user.allowed_to?(:add_issue_notes, issue.project) ||
