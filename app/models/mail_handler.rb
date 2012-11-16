@@ -25,7 +25,7 @@ class MailHandler < ActionMailer::Base
   attr_reader :email, :user
 
   def logger
-    @logger = super || Logger.new(nil)
+    @logger ||= (super || Logger.new(nil))
   end
 
   def self.receive(email, options={})
