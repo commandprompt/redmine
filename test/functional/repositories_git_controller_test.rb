@@ -53,8 +53,6 @@ class RepositoriesGitControllerTest < ActionController::TestCase
     if @char_1.respond_to?(:force_encoding)
       @char_1.force_encoding('UTF-8')
     end
-
-    Setting.default_language = 'en'
   end
 
   def test_create_and_update
@@ -265,6 +263,8 @@ class RepositoriesGitControllerTest < ActionController::TestCase
     end
 
     def test_diff
+      assert_equal true, @repository.is_default
+      assert_nil @repository.identifier
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
       @project.reload
@@ -287,26 +287,55 @@ class RepositoriesGitControllerTest < ActionController::TestCase
       end
     end
 
+    def test_diff_with_rev_and_path
+      assert_equal 0, @repository.changesets.count
+      @repository.fetch_changesets
+      @project.reload
+      assert_equal NUM_REV, @repository.changesets.count
+      with_settings :diff_max_lines_displayed => 1000 do
+        # Full diff of changeset 2f9c0091
+        ['inline', 'sbs'].each do |dt|
+          get :diff,
+              :id   => PRJ_ID,
+              :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7',
+              :path => repository_path_hash(['sources', 'watchers_controller.rb'])[:param],
+              :type => dt
+          assert_response :success
+          assert_template 'diff'
+          # Line 22 removed
+          assert_tag :tag => 'th',
+                     :content => '22',
+                     :sibling => { :tag => 'td',
+                                   :attributes => { :class => /diff_out/ },
+                                   :content => /def remove/ }
+          assert_tag :tag => 'h2', :content => /2f9c0091/
+        end
+      end
+    end
+
     def test_diff_truncated
       assert_equal 0, @repository.changesets.count
       @repository.fetch_changesets
       @project.reload
       assert_equal NUM_REV, @repository.changesets.count
-      Setting.diff_max_lines_displayed = 5
 
-      # Truncated diff of changeset 2f9c0091
-      with_cache do
-        get :diff, :id   => PRJ_ID, :type => 'inline',
-            :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
-        assert_response :success
-        assert @response.body.include?("... This diff was truncated")
-
-        Setting.default_language = 'fr'
-        get :diff, :id   => PRJ_ID, :type => 'inline',
-            :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
-        assert_response :success
-        assert ! @response.body.include?("... This diff was truncated")
-        assert @response.body.include?("... Ce diff")
+      with_settings :diff_max_lines_displayed => 5 do
+        # Truncated diff of changeset 2f9c0091
+        with_cache do
+          with_settings :default_language => 'en' do
+            get :diff, :id   => PRJ_ID, :type => 'inline',
+                :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+            assert_response :success
+            assert @response.body.include?("... This diff was truncated")
+          end
+          with_settings :default_language => 'fr' do
+            get :diff, :id   => PRJ_ID, :type => 'inline',
+                :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+            assert_response :success
+            assert ! @response.body.include?("... This diff was truncated")
+            assert @response.body.include?("... Ce diff")
+          end
+        end
       end
     end
 
@@ -326,7 +355,53 @@ class RepositoriesGitControllerTest < ActionController::TestCase
         diff = assigns(:diff)
         assert_not_nil diff
         assert_tag :tag => 'h2', :content => /2f9c0091:61b685fb/
+        assert_tag :tag => "form",
+                   :attributes => {
+                     :action => "/projects/subproject1/repository/revisions/" +
+                                   "61b685fbe55ab05b5ac68402d5720c1a6ac973d1/diff"
+                   }
+        assert_tag :tag => 'input',
+                   :attributes => {
+                     :id => "rev_to",
+                     :name => "rev_to",
+                     :type => "hidden",
+                     :value => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
+                   }
       end
+    end
+
+    def test_diff_path_in_subrepo
+      repo = Repository::Git.create(
+                      :project       => @project,
+                      :url           => REPOSITORY_PATH,
+                      :identifier => 'test-diff-path',
+                      :path_encoding => 'ISO-8859-1'
+                      );
+      assert repo
+      assert_equal false, repo.is_default
+      assert_equal 'test-diff-path', repo.identifier
+      get :diff,
+          :id     => PRJ_ID,
+          :repository_id => 'test-diff-path',
+          :rev    => '61b685fbe55ab05b',
+          :rev_to => '2f9c0091c754a91a',
+          :type   => 'inline'
+      assert_response :success
+      assert_template 'diff'
+      diff = assigns(:diff)
+      assert_not_nil diff
+      assert_tag :tag => "form",
+                 :attributes => {
+                   :action => "/projects/subproject1/repository/test-diff-path/" + 
+                                "revisions/61b685fbe55ab05b/diff"
+                 }
+      assert_tag :tag => 'input',
+                 :attributes => {
+                   :id => "rev_to",
+                   :name => "rev_to",
+                   :type => "hidden",
+                   :value => '2f9c0091c754a91a'
+                 }
     end
 
     def test_diff_latin_1
@@ -360,8 +435,13 @@ class RepositoriesGitControllerTest < ActionController::TestCase
     end
 
     def test_save_diff_type
-      @request.session[:user_id] = 1 # admin
+      user1 = User.find(1)
+      user1.pref[:diff_type] = nil
+      user1.preference.save
       user = User.find(1)
+      assert_nil user.pref[:diff_type]
+
+      @request.session[:user_id] = 1 # admin
       get :diff,
           :id   => PRJ_ID,
           :rev  => '2f9c0091c754a91af7a9c478e36556b4bde8dcf7'
@@ -465,6 +545,21 @@ class RepositoriesGitControllerTest < ActionController::TestCase
           end
         end
       end
+    end
+
+    def test_revisions
+      assert_equal 0, @repository.changesets.count
+      @repository.fetch_changesets
+      @project.reload
+      assert_equal NUM_REV, @repository.changesets.count
+      get :revisions, :id => PRJ_ID
+      assert_response :success
+      assert_template 'revisions'
+      assert_tag :tag => 'form',
+                 :attributes => {
+                   :method => 'get',
+                   :action => '/projects/subproject1/repository/revision'
+                 }
     end
 
     def test_revision
