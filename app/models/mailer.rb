@@ -390,14 +390,18 @@ class Mailer < ActionMailer::Base
     ActionMailer::Base.delivery_method = saved_method
   end
 
+  def mail_from
+    Setting.mail_from
+  end
+
   def mail(headers={})
     headers.merge! 'X-Mailer' => 'Redmine',
             'X-Redmine-Host' => Setting.host_name,
             'X-Redmine-Site' => Setting.app_title,
             'X-Auto-Response-Suppress' => 'OOF',
             'Auto-Submitted' => 'auto-generated',
-            'From' => Setting.mail_from,
-            'List-Id' => "<#{Setting.mail_from.to_s.gsub('@', '.')}>"
+            'From' => mail_from,
+            'List-Id' => "<#{mail_from.to_s.gsub('@', '.')}>"
 
     # Removes the author from the recipients and cc
     # if he doesn't want to receive notifications about what he does
