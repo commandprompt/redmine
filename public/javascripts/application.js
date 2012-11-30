@@ -402,10 +402,10 @@ function hideModal(el) {
   modal.dialog("close");
 }
 
-function submitPreview(url, form, target) {
+function submitPreview(url, form, target, method) {
   $.ajax({
     url: url,
-    type: 'post',
+    type: method,
     data: $('#'+form).serialize(),
     success: function(data){
       $('#'+target).html(data);
