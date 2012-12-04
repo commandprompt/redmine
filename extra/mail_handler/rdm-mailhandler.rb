@@ -101,9 +101,13 @@ class RedmineMailHandler
                            'no_account_notice' => no_account_notice }
     issue_attributes.each { |attr, value| data["issue[#{attr}]"] = value }
 
-    debug "Posting to #{uri}..."
-    response = Net::HTTPS.post_form(URI.parse(uri), data, headers, :no_check_certificate => no_check_certificate)
-    debug "Response received: #{response.code}"
+    begin
+      debug "Posting to #{uri}..."
+      response = Net::HTTPS.post_form(URI.parse(uri), data, headers, :no_check_certificate => no_check_certificate)
+      debug "Response received: #{response.code}"
+    rescue SystemCallError # connection refused, etc.
+      return 75 # temporary failure
+    end
 
     case response.code.to_i
       when 403
