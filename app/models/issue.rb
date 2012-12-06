@@ -117,8 +117,8 @@ class Issue < ActiveRecord::Base
   def visible?(usr=nil)
     usr ||= User.current
 
-    # issue is always visible to it's author
-    return true if self.author == usr
+    # issue is always visible to its author
+    return true if usr.logged? && self.author == usr
 
     usr.allowed_to?(:view_issues, self.project) do |role, user|
       if user.logged?
