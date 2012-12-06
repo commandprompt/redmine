@@ -120,8 +120,10 @@ class Issue < ActiveRecord::Base
         when 'own'
           self.author == user || user.is_or_belongs_to?(assigned_to) || self.watcher_users.exists?(user)
         else
-          !self.is_private?
+          false
         end
+      else
+        !self.is_private?
       end
     end
   end
