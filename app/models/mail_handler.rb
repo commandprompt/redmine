@@ -59,11 +59,14 @@ class MailHandler < ActionMailer::Base
     'Auto-Submitted' => /^auto-/
   }
 
+  def sender_email
+    @sender_email ||= @email.from.to_a.first.to_s.strip
+  end
+
   # Processes incoming emails
   # Returns the created object (eg. an issue, a message) or false
   def receive(email)
     @email = email
-    sender_email = email.from.to_a.first.to_s.strip
     # Ignore emails received from the application emission address to avoid hell cycles
     if sender_email.downcase == Setting.mail_from.to_s.strip.downcase
       logger.info "MailHandler: ignoring email from Redmine emission address [#{sender_email}]"
