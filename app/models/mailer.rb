@@ -82,7 +82,7 @@ class Mailer < ActionMailer::Base
     atts.each do |att|
       attachments[att.filename] = {
         :mime_type => att.content_type,
-        :content => File.read(att.diskfile)
+        :content => (File.read(att.diskfile) rescue "")
       }
     end
   end
