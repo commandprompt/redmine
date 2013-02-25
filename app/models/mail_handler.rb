@@ -386,8 +386,11 @@ class MailHandler < ActionMailer::Base
     @plain_text_body = Redmine::CodesetUtil.to_utf8(part.body.decoded, part.charset)
 
     # strip html tags and remove doctype directive
-    @plain_text_body = strip_tags(@plain_text_body.strip)
-    @plain_text_body.sub! %r{^<!DOCTYPE .*$}, ''
+    if part.mime_type == 'text/html'
+      @plain_text_body = strip_tags(@plain_text_body.strip)
+      @plain_text_body.sub! %r{^<!DOCTYPE .*$}, ''
+    end
+
     @plain_text_body
   end
 
