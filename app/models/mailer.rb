@@ -430,6 +430,9 @@ class Mailer < ActionMailer::Base
       headers[:references] = @references_objects.collect {|o| "<#{self.class.message_id_for(o)}>"}.join(' ')
     end
 
+    @emails_header ||= Setting.emails_header
+    @emails_footer ||= Setting.emails_footer
+
     super headers do |format|
       format.text
       format.html unless Setting.plain_text_mail?
