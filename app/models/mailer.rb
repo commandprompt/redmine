@@ -32,7 +32,7 @@ class Mailer < ActionMailer::Base
   # Example:
   #   issue_add(issue) => Mail::Message object
   #   Mailer.issue_add(issue).deliver => sends an email to issue recipients
-  def issue_add(issue)
+  def issue_add(issue, force_notify_author = false)
     redmine_headers 'Project' => issue.project.identifier,
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
@@ -46,7 +46,8 @@ class Mailer < ActionMailer::Base
     include_attachments(issue.attachments)
     mail :to => recipients,
       :cc => cc,
-      :subject => "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
+      :subject => "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}",
+      :force_notify_author => force_notify_author
   end
 
   # Builds a Mail::Message object used to email recipients of the edited issue.
@@ -408,7 +409,7 @@ class Mailer < ActionMailer::Base
     if @author && @author.logged? && @author.pref[:no_self_notified]
       headers[:to].delete(@author.mail) if headers[:to].is_a?(Array)
       headers[:cc].delete(@author.mail) if headers[:cc].is_a?(Array)
-    end
+    end unless headers.delete(:force_notify_author)
 
     if @author && @author.logged?
       redmine_headers 'Sender' => @author.login

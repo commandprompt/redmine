@@ -176,7 +176,7 @@ class MailHandler < ActionMailer::Base
 
     add_attachments(issue)
     issue.save!
-    issue.deliver_create_notification
+    issue.deliver_create_notification(true) # force notify author
 
     logger.info "MailHandler: issue ##{issue.id} created by #{user}"
     issue

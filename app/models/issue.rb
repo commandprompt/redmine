@@ -779,8 +779,8 @@ class Issue < ActiveRecord::Base
     @spent_hours ||= time_entries.sum(:hours) || 0
   end
 
-  def deliver_create_notification
-    Mailer.issue_add(self).deliver if Setting.notified_events.include?('issue_added')
+  def deliver_create_notification(force_notify_author = false)
+    Mailer.issue_add(self, force_notify_author).deliver if Setting.notified_events.include?('issue_added')
   end
 
   # Returns the total number of hours spent on this issue and its descendants
