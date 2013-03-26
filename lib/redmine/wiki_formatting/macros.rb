@@ -242,6 +242,13 @@ module Redmine
           raise "Attachment #{filename} not found"
         end
       end
+
+      desc "A link to attachment by id. Example:\n\n<pre>{{attachment(<id>)}}</pre>"
+      macro :attachment do |obj, args|
+        if obj && obj.respond_to?(:attachments) && attachment = obj.attachments.find_by_id(args.first)
+          link_to_attachment attachment, :class => 'icon icon-attachment', :download => true
+        end
+      end
     end
   end
 end

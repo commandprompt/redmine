@@ -162,7 +162,11 @@ class MailHandler < ActionMailer::Base
       raise UnauthorizedAction unless user.allowed_to?(:add_issues, project)
     end
 
-    issue = Issue.new(:author => user, :project => project)
+    @object = issue = Issue.new(:author => user, :project => project)
+    # make sure attachments are added before we parse the body, so
+    # wiki macros can be inserted properly
+    add_attachments(issue)
+
     issue.safe_attributes = issue_attributes_from_keywords(issue)
     issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
     issue.subject = cleaned_up_subject
@@ -174,7 +178,6 @@ class MailHandler < ActionMailer::Base
     # add To and Cc as watchers before saving so the watchers can reply to Redmine
     add_watchers(issue)
 
-    add_attachments(issue)
     issue.save!
     issue.deliver_create_notification(true) # force notify author
 
@@ -184,7 +187,7 @@ class MailHandler < ActionMailer::Base
 
   # Adds a note to an existing issue
   def receive_issue_reply(issue_id, from_journal=nil)
-    issue = Issue.find_by_id(issue_id)
+    @object = issue = Issue.find_by_id(issue_id)
     unless issue
       logger.info "MailHandler: ignoring reply to non-existent issue ##{issue_id}"
       return
@@ -211,10 +214,12 @@ class MailHandler < ActionMailer::Base
     if issue.closed? && Setting.mail_handler_reopen_on_reply?
       issue.status = IssueStatus.named(Setting.mail_handler_reopen_status).first || IssueStatus.default
     end
+
+    add_attachments(issue)
+
     issue.safe_attributes = issue_attributes_from_keywords(issue)
     issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
     journal.notes = cleaned_up_text_body
-    add_attachments(issue)
     issue.save!
     logger.info "MailHandler: issue ##{issue.id} updated by #{user}"
     journal
@@ -230,7 +235,7 @@ class MailHandler < ActionMailer::Base
 
   # Receives a reply to a forum message
   def receive_message_reply(message_id)
-    message = Message.find_by_id(message_id)
+    @object = message = Message.find_by_id(message_id)
     if message
       message = message.root
 
@@ -239,12 +244,13 @@ class MailHandler < ActionMailer::Base
       end
 
       if !message.locked?
-        reply = Message.new(:subject => cleaned_up_subject.gsub(%r{^.*msg\d+\]}, '').strip,
-                            :content => cleaned_up_text_body)
+        reply = Message.new(:subject => cleaned_up_subject.gsub(%r{^.*msg\d+\]}, '').strip)
+        add_attachments(reply)
+        reply.content = cleaned_up_text_body
+
         reply.author = user
         reply.board = message.board
         message.children << reply
-        add_attachments(reply)
         reply
       else
         logger.info "MailHandler: ignoring reply from [#{sender_email}] to a locked topic"
@@ -360,16 +366,37 @@ class MailHandler < ActionMailer::Base
     end
   end
 
+  def email_text_parts(sub_type)
+    mime_type = "text/#{sub_type}"
+    parts = email.all_parts
+    # number of attachments the object had before the update
+    n = @object.attachments.count - parts.attachments.count
+    parts.map do |p|
+      if p.mime_type == mime_type
+        p
+      elsif p.attachment?
+        att = @object.attachments[n + parts.attachments.index(p)]
+        Mail::Part.new("{{attachment(#{att.id})}}")
+      end
+    end.tap{|mapped| mapped.delete(nil)}
+  end
+
   # Returns the text/plain part of the email
   # If not found (eg. HTML-only email), returns the body with tags removed
   def plain_text_body
     return @plain_text_body unless @plain_text_body.nil?
 
-    part = email.text_part || email.html_part || email
-    @plain_text_body = Redmine::CodesetUtil.to_utf8(part.body.decoded, part.charset)
+    parts = if (text_parts = email_text_parts('plain')).present?
+              text_parts
+            elsif (html_parts = email_text_parts('html')).present?
+              html_parts
+            else
+              [email]
+            end
+    @plain_text_body = parts.map{|p| Redmine::CodesetUtil.to_utf8(p.body.decoded, p.charset)}.join("\r\n")
 
     # strip html tags and remove doctype directive
-    if part.mime_type == 'text/html'
+    if parts.any?{|p| p.mime_type == 'text/html'}
       @plain_text_body = strip_tags(@plain_text_body.strip)
       @plain_text_body.sub! %r{^<!DOCTYPE .*$}, ''
     end
