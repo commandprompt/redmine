@@ -66,6 +66,7 @@ class MailHandler < ActionMailer::Base
   # Processes incoming emails
   # Returns the created object (eg. an issue, a message) or false
   def receive(email)
+    @object = nil
     @email = email
     # Ignore emails received from the application emission address to avoid hell cycles
     if sender_email.downcase == Setting.mail_from.to_s.strip.downcase
@@ -370,13 +371,14 @@ class MailHandler < ActionMailer::Base
     mime_type = "text/#{sub_type}"
     parts = email.all_parts
     # number of attachments the object had before the update
-    n = @object.attachments.count - parts.attachments.count
+    n = @object.attachments.count - parts.attachments.count if @object
+
     parts.map do |p|
       if p.mime_type == mime_type
         p
-      elsif p.attachment?
+      elsif p.attachment? && @object && @object.attachments
         att = @object.attachments[n + parts.attachments.index(p)]
-        Mail::Part.new("{{attachment(#{att.id})}}")
+        Mail::Part.new("{{attachment(#{att.id})}}") if att
       end
     end.tap{|mapped| mapped.delete(nil)}
   end
