@@ -163,7 +163,7 @@ class MailHandlerTest < ActiveSupport::TestCase
     assert_equal 'Ticket created by email with attachment', issue.subject
     assert_equal User.find_by_login('jsmith'), issue.author
     assert_equal Project.find(2), issue.project
-    assert_equal 'This is  a new ticket with attachments', issue.description
+    assert_match /^This is  a new ticket with attachments\r\n{{attachment\(\d+\)}}$/, issue.description
     # Attachment properties
     assert_equal 1, issue.attachments.size
     assert_equal 'Paella.jpg', issue.attachments.first.filename
