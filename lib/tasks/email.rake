@@ -29,6 +29,7 @@ General options:
                            create: create a user account
   no_permission_check=1    disable permission checking when receiving
                            the email
+  no_account_notice=1      disable new user account notification
 
 Issue attributes control options:
   project=PROJECT          identifier of the target project
@@ -58,6 +59,7 @@ END_DESC
       options[:allow_override] = ENV['allow_override'] if ENV['allow_override']
       options[:unknown_user] = ENV['unknown_user'] if ENV['unknown_user']
       options[:no_permission_check] = ENV['no_permission_check'] if ENV['no_permission_check']
+      options[:no_account_notice] = ENV['no_account_notice'] if ENV['no_account_notice']
 
       MailHandler.receive(STDIN.read, options)
     end
@@ -73,6 +75,7 @@ General options:
                            create: create a user account
   no_permission_check=1    disable permission checking when receiving
                            the email
+  no_account_notice=1      disable new user account notification
 
 Available IMAP options:
   host=HOST                IMAP server host (default: 127.0.0.1)
@@ -129,6 +132,7 @@ END_DESC
       options[:allow_override] = ENV['allow_override'] if ENV['allow_override']
       options[:unknown_user] = ENV['unknown_user'] if ENV['unknown_user']
       options[:no_permission_check] = ENV['no_permission_check'] if ENV['no_permission_check']
+      options[:no_account_notice] = ENV['no_account_notice'] if ENV['no_account_notice']
 
       Redmine::IMAP.check(imap_options, options)
     end
@@ -162,6 +166,7 @@ END_DESC
       options[:allow_override] = ENV['allow_override'] if ENV['allow_override']
       options[:unknown_user] = ENV['unknown_user'] if ENV['unknown_user']
       options[:no_permission_check] = ENV['no_permission_check'] if ENV['no_permission_check']
+      options[:no_account_notice] = ENV['no_account_notice'] if ENV['no_account_notice']
 
       Redmine::POP3.check(pop_options, options)
     end
