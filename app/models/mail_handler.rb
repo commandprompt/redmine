@@ -210,6 +210,11 @@ class MailHandler < ActionMailer::Base
       issue.private_notes = true
     end
 
+    # Assign issue to the first to reply to it
+    if Setting.mail_handler_auto_assign == '1'
+      issue.assigned_to = user if !issue.assigned_to && issue.journals.empty? && issue.author != user
+    end
+
     # Reopen issue on new mail reply
     if issue.closed? && Setting.mail_handler_reopen_on_reply?
       issue.status = IssueStatus.named(Setting.mail_handler_reopen_status).first || IssueStatus.default

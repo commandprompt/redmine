@@ -155,6 +155,8 @@ mail_handler_reopen_on_reply:
   default: 0
 mail_handler_reopen_status:
   default: ''
+mail_handler_auto_assign:
+  default: 0
 issue_list_default_columns:
   serialized: true
   default:

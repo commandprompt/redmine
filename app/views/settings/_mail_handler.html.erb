@@ -24,6 +24,7 @@
 <p><%= setting_select :mail_handler_reopen_status,
        IssueStatus.all.reject{|s| s.is_closed?}.collect{|s| [s.name, s.name]},
        :disabled => !Setting.mail_handler_reopen_on_reply? %></p>
+<p><%= setting_check_box :mail_handler_auto_assign %></p>
 </div>
 
 <%= submit_tag l(:button_save) %>
