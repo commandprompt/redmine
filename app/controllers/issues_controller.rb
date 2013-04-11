@@ -19,7 +19,7 @@ class IssuesController < ApplicationController
   menu_item :new_issue, :only => [:new, :create]
   default_search_scope :issues
 
-  before_filter :find_issue, :only => [:show, :edit, :update]
+  before_filter :find_issue, :only => [:show, :edit, :update, :close]
   before_filter :find_issues, :only => [:bulk_edit, :bulk_update, :destroy]
   before_filter :find_project, :only => [:new, :create]
   before_filter :authorize, :except => [:index]
@@ -27,7 +27,7 @@ class IssuesController < ApplicationController
   before_filter :check_for_default_issue_status, :only => [:new, :create]
   before_filter :build_new_issue_from_params, :only => [:new, :create]
   accept_rss_auth :index, :show
-  accept_api_auth :index, :show, :create, :update, :destroy
+  accept_api_auth :index, :show, :create, :update, :close, :destroy
 
   rescue_from Query::StatementInvalid, :with => :query_statement_invalid
 
@@ -197,6 +197,13 @@ class IssuesController < ApplicationController
         format.api  { render_validation_errors(@issue) }
       end
     end
+  end
+
+  def close
+    if allowed_closed_status = @issue.new_statuses_allowed_to.detect(&:is_closed?)
+      params[:issue] = {:status_id => allowed_closed_status.id}
+    end
+    update
   end
 
   # Bulk edit/copy a set of issues

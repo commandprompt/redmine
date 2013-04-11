@@ -166,6 +166,9 @@ RedmineApp::Application.routes.draw do
   end
 
   resources :issues do
+    member do
+      put 'close'
+    end
     collection do
       match 'bulk_edit', :via => [:get, :post]
       post 'bulk_update'
