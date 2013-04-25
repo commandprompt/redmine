@@ -56,7 +56,8 @@ class MailHandler < ActionMailer::Base
   cattr_accessor :ignored_emails_headers
   @@ignored_emails_headers = {
     'X-Auto-Response-Suppress' => 'oof',
-    'Auto-Submitted' => /^auto-/
+    'Auto-Submitted' => /^auto-/,
+    'Precedence' => /.*/
   }
 
   def sender_email
