@@ -45,19 +45,8 @@ class MailHandler < ActionMailer::Base
     @@handler_options[:no_permission_check] = (@@handler_options[:no_permission_check].to_s == '1' ? true : false)
     @@handler_options[:no_account_notice] = (@@handler_options[:no_account_notice].to_s == '1')
 
-    super(encode_email(email))
-  end
-
-  def self.encode_email(text)
-    text.dup.tap{ |email|
-      email.force_encoding('ASCII-8BIT') if email.respond_to?(:force_encoding)
-      email.encode!('UTF-8', email_encoding_options) if email.respond_to?(:encode!)
-    }
-  end
-
-  def self.email_encoding_options
-    # TODO: someone might like to configure this via configuration.yml
-    { :invalid => :replace, :undef => :replace, :replace => '?' }
+    email.force_encoding('ASCII-8BIT') if email.respond_to?(:force_encoding)
+    super(email)
   end
 
   def logger
