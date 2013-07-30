@@ -213,7 +213,7 @@ class MailHandler < ActionMailer::Base
 
     # Assign issue to the first to reply to it
     if Setting.mail_handler_auto_assign == '1'
-      issue.assigned_to = user if !issue.assigned_to && issue.journals.empty? && issue.author != user
+      issue.assigned_to = user if !issue.assigned_to && issue.author != user
     end
 
     # Reopen issue on new mail reply
