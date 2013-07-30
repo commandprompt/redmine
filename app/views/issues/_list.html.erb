@@ -23,7 +23,21 @@
     <tr class="group open">
       <td colspan="<%= query.inline_columns.size + 2 %>">
         <span class="expander" onclick="toggleRowGroup(this);">&nbsp;</span>
-        <%= group.blank? ? l(:label_none) : column_content(@query.group_by_column, issue) %> <span class="count"><%= @issue_count_by_group[group] %></span>
+        <% if group.blank? %>
+          <%= l(:label_none) %>
+        <% else %>
+          <% column = @query.group_by_column %>
+          <%= column_content(column, issue) %>
+
+          <% value = column.value(issue) %>
+          <% if value.is_a? Project %>
+          <div class="contextual">
+            <%= link_to l(:label_issue_new), new_project_issue_path(:project_id => value),
+                        :class => 'icon icon-add' %>
+          </div>
+          <% end %>
+        <% end %>
+        <span class="count"><%= @issue_count_by_group[group] %></span>
         <%= link_to_function("#{l(:button_collapse_all)}/#{l(:button_expand_all)}",
                              "toggleAllRowGroups(this)", :class => 'toggle-all') %>
       </td>
