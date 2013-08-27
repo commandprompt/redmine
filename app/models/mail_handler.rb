@@ -222,6 +222,7 @@ class MailHandler < ActionMailer::Base
     end
 
     add_attachments(issue)
+    add_watchers(issue)
 
     issue.safe_attributes = issue_attributes_from_keywords(issue)
     issue.safe_attributes = {'custom_field_values' => custom_field_values_from_keywords(issue)}
