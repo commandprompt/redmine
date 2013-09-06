@@ -200,7 +200,7 @@ class IssuesController < ApplicationController
   end
 
   def close
-    if allowed_closed_status = @issue.new_statuses_allowed_to.detect(&:is_closed?)
+    if allowed_closed_status = @issue.allowed_status_to_close
       params[:issue] = {:status_id => allowed_closed_status.id}
     end
     update

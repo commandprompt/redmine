@@ -742,6 +742,10 @@ class Issue < ActiveRecord::Base
     end
   end
 
+  def allowed_status_to_close
+    new_statuses_allowed_to.detect(&:is_closed?)
+  end
+
   def assigned_to_was
     if assigned_to_id_changed? && assigned_to_id_was.present?
       @assigned_to_was ||= User.find_by_id(assigned_to_id_was)
