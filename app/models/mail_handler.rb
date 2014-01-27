@@ -174,7 +174,10 @@ class MailHandler < ActionMailer::Base
     if issue.subject.blank?
       issue.subject = '(no subject)'
     end
-    issue.description = cleaned_up_text_body(issue)
+
+    # we don't need extra attachment links in the issue description,
+    # so don't pass the issue object to text body extraction method
+    issue.description = cleaned_up_text_body
 
     # add To and Cc as watchers before saving so the watchers can reply to Redmine
     add_watchers(issue)
@@ -377,10 +380,10 @@ class MailHandler < ActionMailer::Base
     mime_type = "text/#{sub_type}"
 
     (parts = email.all_parts).map do |p|
-      if p.mime_type == mime_type
-        p
-      elsif p.attachment?
+      if p.attachment?
         Mail::Part.new("{{attachment(#{parts.attachments.index(p)})}}")
+      elsif p.mime_type == mime_type
+        p
       end
     end.reject(&:nil?)
   end
@@ -415,7 +418,7 @@ class MailHandler < ActionMailer::Base
     return text unless attachable
 
     # number of attachments the object had before the update
-    n = attachable.attachments.count - email.all_parts.attachments.count
+    n = attachable.attachments.size - email.all_parts.count{|p| p.attachment?}
 
     text.gsub(/{{attachment\((\d+)\)}}/) do |m|
       if att = attachable.attachments[n + $1.to_i]
