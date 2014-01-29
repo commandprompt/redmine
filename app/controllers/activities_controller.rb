@@ -60,6 +60,10 @@ class ActivitiesController < ApplicationController
 
   rescue ActiveRecord::RecordNotFound
     render_404
+  rescue ActiveRecord::StatementInvalid => e
+    # This can happen when a pre-Gregorian date is passed to the
+    # PostgreSQL driver, for example.
+    render_error(:message => e.to_s.split("\n").first, :status => 400)
   end
 
   private
